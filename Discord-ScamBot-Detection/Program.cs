@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +14,11 @@ namespace Discord_ScamBot_Detection
     class Program
     {
         private readonly DiscordSocketClient _client;
+        private List<string> validSteamUrls = new List<string> { 
+            "steamcommunity", 
+            "www.steamcommunity", 
+            "store.steamcommunity" 
+        };
 
         static void Main(string[] args)
         {
@@ -40,7 +47,7 @@ namespace Discord_ScamBot_Detection
                 if (result.Success)
                 {
                     //Check for inconsistency
-                    if (result.Groups["ext"].Value == "com" && (result.Groups["Domain"].Value == "steamcommunity" || result.Groups["Domain"].Value == "store.steamcommunity"))
+                    if (result.Groups["ext"].Value == "com" && validSteamUrls.Contains(result.Groups["Domain"].Value, StringComparer.OrdinalIgnoreCase))
                         return; //Valid steamcommunity url
                     else
                     {
