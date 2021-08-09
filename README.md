@@ -9,4 +9,4 @@ Run
 Stop being harrassed
 
 ## Requirements
-.NET Core 3.1+
+.NET Core 3.1+ (Windows / Linux)
