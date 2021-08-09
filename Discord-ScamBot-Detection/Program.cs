@@ -17,7 +17,10 @@ namespace Discord_ScamBot_Detection
         private List<string> validSteamUrls = new List<string> { 
             "steamcommunity", 
             "www.steamcommunity", 
-            "store.steamcommunity" 
+            "steampowered",
+            "www.steampowered",
+            "store.steampowered",
+            "cdn.akamai.steamstatic"
         };
 
         static void Main(string[] args)
