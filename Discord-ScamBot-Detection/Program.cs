@@ -14,6 +14,8 @@ namespace Discord_ScamBot_Detection
     class Program
     {
         private readonly DiscordSocketClient _client;
+        private readonly bool _deleteMessageOnly;
+
         private List<string> validSteamUrls = new List<string> { 
             "steamcommunity", 
             "www.steamcommunity", 
@@ -25,14 +27,17 @@ namespace Discord_ScamBot_Detection
 
         static void Main(string[] args)
         {
-            new Program().InitMainAsync().GetAwaiter().GetResult();
+            new Program(args).InitMainAsync().GetAwaiter().GetResult();
         }
 
-        public Program()
+        public Program(string[] args)
         {
             _client = new DiscordSocketClient();
             _client.Log += LogAsync;
             _client.MessageReceived += MessageReceivedAsync;
+
+            if (args.Length > 0)
+                _deleteMessageOnly = args[0].Contains("-deleteMessageOnly", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task MessageReceivedAsync(SocketMessage rawMessage)
@@ -54,8 +59,13 @@ namespace Discord_ScamBot_Detection
                         return; //Valid steamcommunity url
                     else
                     {
-                        var context = new SocketCommandContext(_client, message);
-                        await context.Guild.AddBanAsync(context.User, 1, "Scammer Bot");
+                        if (_deleteMessageOnly)
+                            await message.DeleteAsync();
+                        else
+                        {
+                            var context = new SocketCommandContext(_client, message);
+                            await context.Guild.AddBanAsync(context.User, 1, "Scammer Bot"); //User ID, Amount of days to prune meesage(s), Reason
+                        }
                     }
 
                 }
