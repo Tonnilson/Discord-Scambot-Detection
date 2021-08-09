@@ -3,7 +3,9 @@ Quick simple Discord bot to detect common scam url(s) for 'steam trading', may a
 
 ## How To
 Create a discord.token file and put your bot's token in it
+
 Run
+
 Stop being harrassed
 
 ## Requirements
