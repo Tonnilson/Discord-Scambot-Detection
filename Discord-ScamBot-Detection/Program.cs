@@ -15,6 +15,8 @@ namespace Discord_ScamBot_Detection
     {
         private readonly DiscordSocketClient _client;
         private readonly bool _deleteMessageOnly;
+        private string _logDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+        private string _logFile => Path.Combine(_logDirectory, $"{DateTime.Now.ToString("yyyy-MM-dd")}.txt");
 
         private List<string> validSteamUrls = new List<string> { 
             "steamcommunity", 
@@ -48,7 +50,9 @@ namespace Discord_ScamBot_Detection
 
             if(message.Content.Contains("steam"))
             {
-                //We're specifically searching for domain names that have the word steam in it
+                /// Regex search for http url link with the word 'steam'
+                /// Ignore cases can be handled in Regex but I do not want to do that because regex is costly as is
+                /// (http|https):\/\/(?!steamcommunity.com|www.steamcommunity.com|.*steampowered.com|.*steamstatic.com)(.*steam.*)\.([a-zA-Z]{2,})
                 Regex patterrn = new Regex(@"(http|https):\/\/(?<Domain>.*steam?.*)\.(?<ext>[a-zA-Z]{2,})");
                 var result = patterrn.Match(message.Content);
                 //Domain with the word 'steam' detected
@@ -59,6 +63,8 @@ namespace Discord_ScamBot_Detection
                         return; //Valid steamcommunity url
                     else
                     {
+                        await LogAsync(new LogMessage(LogSeverity.Info, "Scam Detection", String.Format("{0} ({1}): {2}", message.Author.Username, message.Author.Id, message.Content)));
+                        
                         if (_deleteMessageOnly)
                             await message.DeleteAsync();
                         else
@@ -74,8 +80,15 @@ namespace Discord_ScamBot_Detection
 
         private Task LogAsync(LogMessage arg)
         {
-            Console.WriteLine(arg.ToString());
-            return Task.CompletedTask;
+            if (!Directory.Exists(_logDirectory))
+                Directory.CreateDirectory(_logDirectory);
+            if (!File.Exists(_logFile))
+                File.Create(_logFile).Dispose();
+
+            string logText = $"{DateTime.Now.ToString("hh:mm:ss")} [{arg.Severity}] {arg.Source}: {arg.Exception?.ToString() ?? arg.Message}";
+            File.AppendAllTextAsync(_logFile, logText + "\n");
+
+            return Console.Out.WriteLineAsync(logText);
         }
 
         public async Task InitMainAsync()
